@@ -116,9 +116,10 @@ function getUserTimezone(user) {
 /**
  * Gets a user's time in their detected timezone
  * @param {Object} user - The Discord user object
+ * @param {string} hourFormat - '12h' or '24h' (default: '12h')
  * @returns {Object} Object with time and day in user's timezone
  */
-function getUserTimeInfo(user) {
+function getUserTimeInfo(user, hourFormat = '12h') {
   const timezone = getUserTimezone(user);
   if (!timezone) {
     return {
@@ -132,6 +133,7 @@ function getUserTimeInfo(user) {
 
   const now = new Date();
   
+  const is12Hour = hourFormat === '12h';
   const formatter = new Intl.DateTimeFormat('en-US', {
     timeZone: timezone,
     weekday: 'long',
@@ -140,7 +142,7 @@ function getUserTimeInfo(user) {
     year: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
-    hour12: true
+    hour12: is12Hour
   });
 
   const parts = formatter.formatToParts(now);
@@ -156,7 +158,9 @@ function getUserTimeInfo(user) {
   const month = partObj.month;
   const date = partObj.day;
   const year = partObj.year;
-  const time = `${partObj.hour}:${partObj.minute} ${partObj.dayPeriod}`;
+  const time = is12Hour 
+    ? `${partObj.hour}:${partObj.minute} ${partObj.dayPeriod}`
+    : `${partObj.hour}:${partObj.minute}`;
 
   return {
     time: time,

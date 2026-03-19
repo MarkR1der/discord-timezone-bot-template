@@ -1,4 +1,5 @@
 const { Events } = require('discord.js');
+const { getServerSettings } = require('../utils/serverSettingsStore');
 
 module.exports = {
   name: Events.InteractionCreate,
@@ -8,7 +9,20 @@ module.exports = {
     const command = interaction.client.commands.get(interaction.commandName);
 
     if (!command) {
-      console.error(`No command matching ${interaction.commandName} was found.`);
+      // Check if user might be trying to use a command alias
+      const settings = getServerSettings(interaction.guildId);
+      let helpText = `No command matching \`${interaction.commandName}\` was found.`;
+      
+      const aliasMatches = Object.entries(settings.commandAliases || {})
+        .filter(([, alias]) => alias.toLowerCase() === interaction.commandName.toLowerCase());
+      
+      if (aliasMatches.length > 0) {
+        const originalName = aliasMatches[0][0];
+        helpText = `The command \`/${interaction.commandName}\` is not registered. Did you mean \`/${originalName}\`?`;
+      }
+      
+      console.error(helpText);
+      await interaction.reply({ content: `❌ ${helpText}`, ephemeral: true }).catch(() => {});
       return;
     }
 

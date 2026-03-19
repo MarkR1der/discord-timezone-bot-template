@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const { getUserTimeInfo } = require('../utils/timeUtils');
+const { getServerSettings } = require('../utils/serverSettingsStore');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -24,7 +25,9 @@ module.exports = {
     );
     const canViewSensitiveInfo = isAdmin || isModerator;
 
-    const timeInfo = getUserTimeInfo(user);
+    // Get server hour format
+    const settings = getServerSettings(interaction.guildId);
+    const timeInfo = getUserTimeInfo(user, settings.hourFormat);
 
     const embed = new EmbedBuilder()
       .setColor(member.displayHexColor || '#0099ff')
