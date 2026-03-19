@@ -1,0 +1,6 @@
+tunnel: discord-bot-tz
+credentials-file: ~/.cloudflared/discord-bot-tz.json
+ingress:
+  - hostname: discord-bot-tz.pages.dev
+    service: http://localhost:3000
+  - service: http_status:404
