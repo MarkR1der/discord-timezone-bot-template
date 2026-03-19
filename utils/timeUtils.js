@@ -85,12 +85,11 @@ function getMemberTimeInfo() {
   const ampm = hours24 >= 12 ? 'PM' : 'AM';
   const hours = String((hours24 % 12) || 12).padStart(2, '0');
   const minutes = String(now.getMinutes()).padStart(2, '0');
-  const seconds = String(now.getSeconds()).padStart(2, '0');
   
   return {
-    time: `${hours}:${minutes}:${seconds} ${ampm}`,
+    time: `${hours}:${minutes} ${ampm}`,
     day: `${day}, ${month} ${date}, ${year}`,
-    fullDateTime: `${day}, ${month} ${date}, ${year} at ${hours}:${minutes}:${seconds} ${ampm}`
+    fullDateTime: `${day}, ${month} ${date}, ${year} at ${hours}:${minutes} ${ampm}`
   };
 }
 
@@ -141,7 +140,6 @@ function getUserTimeInfo(user) {
     year: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
-    second: '2-digit',
     hour12: true
   });
 
@@ -158,7 +156,7 @@ function getUserTimeInfo(user) {
   const month = partObj.month;
   const date = partObj.day;
   const year = partObj.year;
-  const time = `${partObj.hour}:${partObj.minute}:${partObj.second} ${partObj.dayPeriod}`;
+  const time = `${partObj.hour}:${partObj.minute} ${partObj.dayPeriod}`;
 
   return {
     time: time,
