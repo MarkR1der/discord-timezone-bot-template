@@ -1,51 +1,36 @@
 const crypto = require('crypto');
-const fs = require('fs');
-const path = require('path');
 
-const sessionsFilePath = path.join(__dirname, '../data/sessions.json');
-
-function loadSessions() {
-  if (!fs.existsSync(sessionsFilePath)) return {};
-  try {
-    return JSON.parse(fs.readFileSync(sessionsFilePath, 'utf8'));
-  } catch {
-    return {};
-  }
-}
-
-function saveSessions(data) {
-  try {
-    fs.writeFileSync(sessionsFilePath, JSON.stringify(data, null, 2));
-  } catch (error) {
-    console.error('Error saving sessions:', error);
-  }
+// Use DISCORD_TOKEN as HMAC secret — it's always available and never changes
+function getSecret() {
+  return process.env.DISCORD_TOKEN || 'fallback-secret';
 }
 
 function createTimezoneSession(userId) {
-  const token = crypto.randomUUID();
-  const data = loadSessions();
-  data[token] = { userId };
-  saveSessions(data);
-  return token;
+  const nonce = crypto.randomUUID();
+  const payload = Buffer.from(JSON.stringify({ userId, nonce })).toString('base64url');
+  const sig = crypto.createHmac('sha256', getSecret()).update(payload).digest('base64url');
+  return `${payload}.${sig}`;
 }
 
 function getTimezoneSession(token) {
-  const data = loadSessions();
-  return data[token] || null;
+  try {
+    const dotIndex = token.lastIndexOf('.');
+    if (dotIndex === -1) return null;
+    const payload = token.slice(0, dotIndex);
+    const sig = token.slice(dotIndex + 1);
+    const expectedSig = crypto.createHmac('sha256', getSecret()).update(payload).digest('base64url');
+    if (sig !== expectedSig) return null;
+    return JSON.parse(Buffer.from(payload, 'base64url').toString('utf8'));
+  } catch {
+    return null;
+  }
 }
 
 function consumeTimezoneSession(token) {
-  const data = loadSessions();
-  const session = data[token];
-  if (!session) return null;
-  delete data[token];
-  saveSessions(data);
-  return session;
+  return getTimezoneSession(token);
 }
 
-function cleanupExpiredSessions() {
-  // Sessions are permanent until used — nothing to clean up
-}
+function cleanupExpiredSessions() {}
 
 module.exports = {
   createTimezoneSession,
