@@ -68,7 +68,7 @@ client.runtimeDiagnostics = {
   readyAt: null,
   lastGatewayError: null,
   lastDisconnectCode: null,
-  authProbe: null,
+  authProbe: { skipped: true },
 };
 
 function probeDiscordAuth(token) {
@@ -182,10 +182,12 @@ if (!discordToken.includes('.')) {
   process.exit(1);
 }
 
-probeDiscordAuth(discordToken).then((result) => {
-  client.runtimeDiagnostics.authProbe = result;
-  console.log('✓ Discord auth probe:', result);
-});
+if (process.env.ENABLE_AUTH_PROBE === 'true') {
+  probeDiscordAuth(discordToken).then((result) => {
+    client.runtimeDiagnostics.authProbe = result;
+    console.log('✓ Discord auth probe:', result);
+  });
+}
 
 logStartupConfiguration();
 
