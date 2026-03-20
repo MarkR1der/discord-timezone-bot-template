@@ -274,14 +274,16 @@ function createTimezoneWebServer(client) {
     if ((request.method === 'GET' || request.method === 'HEAD') && (url.pathname === '/health' || url.pathname === '/')) {
       const inStartupGrace = process.uptime() * 1000 < startupGraceMs;
       const botReady = !client || client.isReady();
-      const statusCode = botReady || inStartupGrace ? 200 : 503;
+      // Health checks should reflect process liveness so hosting platforms don't restart in a loop.
+      const statusCode = 200;
       response.writeHead(statusCode, { 'Content-Type': 'application/json; charset=utf-8' });
       if (request.method === 'HEAD') {
         response.end();
       } else {
         response.end(JSON.stringify({
-          ok: statusCode === 200,
+          ok: true,
           botReady,
+          inStartupGrace,
           uptimeSeconds: Math.floor(process.uptime()),
         }));
       }
