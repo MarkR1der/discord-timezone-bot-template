@@ -2,7 +2,7 @@ const { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, Messa
 const { createTimezoneSession } = require('../utils/timezoneSessionStore');
 
 function getSetupBaseUrl() {
-  const configuredBaseUrl = process.env.PUBLIC_BASE_URL || process.env.RENDER_EXTERNAL_URL;
+  const configuredBaseUrl = process.env.RENDER_EXTERNAL_URL || process.env.PUBLIC_BASE_URL;
   if (configuredBaseUrl) {
     return configuredBaseUrl;
   }

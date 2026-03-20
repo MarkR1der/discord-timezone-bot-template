@@ -13,7 +13,7 @@ try {
 }
 
 function getPublicBaseUrl() {
-  return process.env.PUBLIC_BASE_URL || process.env.RENDER_EXTERNAL_URL || null;
+  return process.env.RENDER_EXTERNAL_URL || process.env.PUBLIC_BASE_URL || null;
 }
 
 function logStartupConfiguration() {
