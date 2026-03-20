@@ -1,6 +1,6 @@
 services:
-  - type: worker
-    name: discord-timezone-bot-worker
+  - type: web
+    name: discord-timezone-bot
     env: node
     plan: free
     buildCommand: npm install
@@ -14,6 +14,6 @@ services:
       - key: GUILD_ID
         sync: false
       - key: TIMEZONE_WEB_ENABLED
-        value: "false"
+        value: "true"
       - key: PUBLIC_BASE_URL
         sync: false

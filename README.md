@@ -67,7 +67,7 @@ The bot will display a formatted embed with the member's information including t
 
 ## Render Deployment
 
-This repo is configured for Render as a worker service via `render.yaml`.
+This repo is configured for Render as a web service via `render.yaml`.
 
 1. Create a new Blueprint service in Render from this repository.
 2. Set environment variables in Render:
@@ -77,6 +77,6 @@ This repo is configured for Render as a worker service via `render.yaml`.
 3. Deploy the service.
 
 Notes:
-- Worker services keep the bot running without your PC being on.
-- `TIMEZONE_WEB_ENABLED` is set to `false` in Render worker mode, so `/detecttz` browser flow is disabled there.
-- Use `/settimezone` in worker mode, or run as a web service with a public URL if you need browser-based timezone detection.
+- Set `PUBLIC_BASE_URL` in Render (for example, your Render service URL) so `/detecttz` can generate a valid setup link.
+- `TIMEZONE_WEB_ENABLED` should be `true` for browser-based timezone setup.
+- If the bot sleeps on free tier, consider upgrading for better uptime.
