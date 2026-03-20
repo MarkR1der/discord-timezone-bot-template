@@ -90,4 +90,16 @@ client.on(Events.Invalidated, () => {
   process.exit(1);
 });
 
-client.login(process.env.DISCORD_TOKEN);
+if (!process.env.DISCORD_TOKEN) {
+  console.error('❌ Missing DISCORD_TOKEN environment variable.');
+  process.exit(1);
+}
+
+client.login(process.env.DISCORD_TOKEN)
+  .then(() => {
+    console.log('✓ Discord login request accepted, waiting for ready event...');
+  })
+  .catch((error) => {
+    console.error('❌ Discord login failed:', error);
+    process.exit(1);
+  });
