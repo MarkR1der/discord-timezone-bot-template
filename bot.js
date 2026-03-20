@@ -136,6 +136,16 @@ if (!process.env.DISCORD_TOKEN) {
 
 logStartupConfiguration();
 
+setTimeout(() => {
+  if (!client.isReady()) {
+    console.error('❌ Bot is still not ready after 60 seconds.');
+    console.error('   Likely causes: invalid token, disallowed intents, or active session conflict.');
+    console.error(`   ENABLE_GUILD_MEMBERS_INTENT=${process.env.ENABLE_GUILD_MEMBERS_INTENT || 'false'}`);
+    console.error(`   ENABLE_MESSAGE_CONTENT_INTENT=${process.env.ENABLE_MESSAGE_CONTENT_INTENT || 'false'}`);
+    console.error('   Check Render logs for shard disconnect/error codes (especially 4013/4014).');
+  }
+}, 60 * 1000);
+
 client.login(process.env.DISCORD_TOKEN)
   .then(() => {
     console.log('✓ Discord login request accepted, waiting for ready event...');
