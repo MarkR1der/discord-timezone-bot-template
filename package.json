@@ -5,9 +5,7 @@
   "main": "bot.js",
   "scripts": {
     "start": "node bot.js",
-    "dev": "node bot.js",
-    "start:worker": "node bot.js",
-    "start:web": "node bot.js"
+    "dev": "node bot.js"
   },
   "keywords": ["discord", "bot"],
   "author": "",
