@@ -5,8 +5,8 @@ const VALID_COMMANDS = ['detecttz', 'help', 'memberinfo', 'resettimezone', 'sett
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName('setting')
-    .setDescription('Server settings (owner only)')
+    .setName('admin')
+    .setDescription('Server admin settings (owner only)')
     .addSubcommand(sub =>
       sub.setName('hour-format')
         .setDescription('Set the hour format for the entire server')

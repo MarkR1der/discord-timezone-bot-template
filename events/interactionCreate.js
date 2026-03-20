@@ -2,11 +2,11 @@ const { Events, MessageFlags } = require('discord.js');
 const { getServerSettings } = require('../utils/serverSettingsStore');
 
 const EPHEMERAL_COMMANDS = new Set([
+  'admin',
   'detecttz',
   'help',
   'resettimezone',
   'settimezone',
-  'setting',
 ]);
 
 module.exports = {
