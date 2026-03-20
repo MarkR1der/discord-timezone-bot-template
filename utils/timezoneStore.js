@@ -3,6 +3,23 @@ const path = require('path');
 
 const timezoneDataPath = path.join(__dirname, '../data/timezones.json');
 
+function canonicalizeTimezone(timezone) {
+  if (typeof timezone !== 'string') {
+    return null;
+  }
+
+  const value = timezone.trim();
+  if (!value) {
+    return null;
+  }
+
+  try {
+    return new Intl.DateTimeFormat('en-US', { timeZone: value }).resolvedOptions().timeZone;
+  } catch {
+    return null;
+  }
+}
+
 function loadTimezones() {
   if (!fs.existsSync(timezoneDataPath)) {
     return {};
@@ -21,8 +38,13 @@ function saveTimezones(data) {
 }
 
 function setUserTimezone(userId, timezone) {
+  const canonicalTimezone = canonicalizeTimezone(timezone);
+  if (!canonicalTimezone) {
+    throw new Error('Invalid timezone');
+  }
+
   const data = loadTimezones();
-  data[userId] = timezone;
+  data[userId] = canonicalTimezone;
   saveTimezones(data);
 }
 
@@ -39,7 +61,22 @@ function resetUserTimezone(userId) {
 
 function getUserSavedTimezone(userId) {
   const data = loadTimezones();
-  return data[userId] || null;
+  const savedTimezone = data[userId];
+  if (!savedTimezone) {
+    return null;
+  }
+
+  const canonicalTimezone = canonicalizeTimezone(savedTimezone);
+  if (!canonicalTimezone) {
+    return null;
+  }
+
+  if (canonicalTimezone !== savedTimezone) {
+    data[userId] = canonicalTimezone;
+    saveTimezones(data);
+  }
+
+  return canonicalTimezone;
 }
 
 module.exports = {

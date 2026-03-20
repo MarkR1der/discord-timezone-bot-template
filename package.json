@@ -5,11 +5,15 @@
   "main": "bot.js",
   "scripts": {
     "start": "node bot.js",
+    "start:web": "node bot.js",
     "dev": "node bot.js"
   },
   "keywords": ["discord", "bot"],
   "author": "",
   "license": "ISC",
+  "engines": {
+    "node": "22.x"
+  },
   "dependencies": {
     "discord.js": "^14.14.0",
     "dotenv": "^16.3.1"

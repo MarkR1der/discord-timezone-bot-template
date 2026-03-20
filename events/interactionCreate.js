@@ -14,11 +14,21 @@ module.exports = {
   async execute(interaction) {
     if (!interaction.isChatInputCommand()) return;
 
-    const command = interaction.client.commands.get(interaction.commandName);
+    const settings = getServerSettings(interaction.guildId);
+    let resolvedCommandName = interaction.commandName;
+
+    if (!interaction.client.commands.has(resolvedCommandName)) {
+      const aliasMatch = Object.entries(settings.commandAliases || {})
+        .find(([, alias]) => alias.toLowerCase() === interaction.commandName.toLowerCase());
+
+      if (aliasMatch) {
+        resolvedCommandName = aliasMatch[0];
+      }
+    }
+
+    const command = interaction.client.commands.get(resolvedCommandName);
 
     if (!command) {
-      // Check if user might be trying to use a command alias
-      const settings = getServerSettings(interaction.guildId);
       let helpText = `No command matching \`${interaction.commandName}\` was found.`;
       
       const aliasMatches = Object.entries(settings.commandAliases || {})
@@ -36,7 +46,7 @@ module.exports = {
 
     try {
       // Acknowledge quickly to avoid Discord's 3-second timeout during cold starts.
-      const shouldBeEphemeral = EPHEMERAL_COMMANDS.has(interaction.commandName);
+      const shouldBeEphemeral = EPHEMERAL_COMMANDS.has(resolvedCommandName);
       await interaction.deferReply(shouldBeEphemeral ? { flags: MessageFlags.Ephemeral } : {});
       await command.execute(interaction);
     } catch (error) {

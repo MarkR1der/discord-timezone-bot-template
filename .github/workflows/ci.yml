@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify required npm scripts
+        run: |
+          node -e "const pkg = require('./package.json'); const required = ['start', 'start:web']; const missing = required.filter((name) => !pkg.scripts || !pkg.scripts[name]); if (missing.length) { throw new Error('Missing scripts: ' + missing.join(', ')); } console.log('Required scripts present:', required.join(', '));"
+
+      - name: Check JavaScript syntax
+        run: |
+          for file in bot.js deploy-commands.js commands/*.js events/*.js utils/*.js; do
+            node --check "$file"
+          done
+
+      - name: Verify Render start command
+        run: |
+          grep -Eq '^\s*startCommand:\s*npm (start|run start:web)\s*$' render.yaml

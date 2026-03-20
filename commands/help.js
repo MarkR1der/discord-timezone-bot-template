@@ -27,7 +27,7 @@ module.exports = {
             + '• Uses the browser timezone from the device that opens the link\n'
             + '• Saves only the timezone name\n'
             + '• Requires `PUBLIC_BASE_URL` to be configured for remote use\n'
-            + '• Falls back to a locale-based guess if the web link is not configured\n'
+            + '• If unavailable, use `/settimezone` as manual fallback\n'
             + '**Usage:** `/detecttz`',
           inline: false
         },
