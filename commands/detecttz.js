@@ -21,9 +21,25 @@ module.exports = {
     }
 
     const token = createTimezoneSession(interaction.user.id);
-    const baseUrl = process.env.PUBLIC_BASE_URL
-      || process.env.RENDER_EXTERNAL_URL
-      || `http://localhost:${process.env.PORT || process.env.TIMEZONE_WEB_PORT || 3000}`;
+    const configuredBaseUrl = process.env.PUBLIC_BASE_URL || process.env.RENDER_EXTERNAL_URL;
+    const isDevelopment = process.env.NODE_ENV !== 'production';
+    const baseUrl = configuredBaseUrl || (isDevelopment
+      ? `http://localhost:${process.env.PORT || process.env.TIMEZONE_WEB_PORT || 3000}`
+      : null);
+
+    if (!baseUrl) {
+      const configReply = await interaction.reply({
+        content: '⚠️ Timezone setup link is not configured on this deployment. Set `PUBLIC_BASE_URL` to your public Render URL, then try `/detecttz` again. You can use `/settimezone` meanwhile.',
+        flags: MessageFlags.Ephemeral,
+        fetchReply: true,
+      });
+
+      setTimeout(() => {
+        configReply.delete().catch(() => {});
+      }, 20000);
+      return;
+    }
+
     const setupUrl = `${baseUrl.replace(/\/$/, '')}/timezone/setup?token=${token}`;
     const row = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
