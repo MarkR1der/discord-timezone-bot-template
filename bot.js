@@ -12,6 +12,27 @@ try {
   console.warn('⚠️ timezoneWebServer module not found. Browser timezone setup is disabled.');
 }
 
+function getPublicBaseUrl() {
+  return process.env.PUBLIC_BASE_URL || process.env.RENDER_EXTERNAL_URL || null;
+}
+
+function logStartupConfiguration() {
+  const publicBaseUrl = getPublicBaseUrl();
+  const configuredPort = Number(process.env.PORT || process.env.TIMEZONE_WEB_PORT || 3000);
+
+  console.log('✓ Startup configuration:', {
+    nodeVersion: process.version,
+    timezoneWebEnabled: process.env.TIMEZONE_WEB_ENABLED === 'true',
+    port: configuredPort,
+    hasDiscordToken: Boolean(process.env.DISCORD_TOKEN),
+    hasClientId: Boolean(process.env.CLIENT_ID),
+    hasGuildId: Boolean(process.env.GUILD_ID),
+    hasPublicBaseUrl: Boolean(process.env.PUBLIC_BASE_URL),
+    hasRenderExternalUrl: Boolean(process.env.RENDER_EXTERNAL_URL),
+    publicBaseUrl: publicBaseUrl || 'not-configured',
+  });
+}
+
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -58,7 +79,7 @@ if (createTimezoneWebServer) {
   // Keep Render free tier alive by pinging our own public health endpoint every 14 minutes.
   // Without this, Render spins down the process after 15 min of no external HTTP traffic,
   // which kills the Discord gateway and causes "application did not respond" errors.
-  const publicUrl = process.env.PUBLIC_BASE_URL || process.env.RENDER_EXTERNAL_URL;
+  const publicUrl = getPublicBaseUrl();
   if (publicUrl) {
     const pinger = publicUrl.startsWith('https') ? require('https') : require('http');
     const healthUrl = `${publicUrl.replace(/\/$/, '')}/health`;
@@ -94,6 +115,8 @@ if (!process.env.DISCORD_TOKEN) {
   console.error('❌ Missing DISCORD_TOKEN environment variable.');
   process.exit(1);
 }
+
+logStartupConfiguration();
 
 client.login(process.env.DISCORD_TOKEN)
   .then(() => {
