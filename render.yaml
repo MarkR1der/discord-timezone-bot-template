@@ -1,10 +1,10 @@
 services:
-  - type: web
-    name: discord-timezone-bot
+  - type: worker
+    name: discord-timezone-bot-worker
     env: node
     plan: free
     buildCommand: npm install
-    startCommand: npm start
+    startCommand: npm run start:worker
     autoDeploy: true
     envVars:
       - key: DISCORD_TOKEN
@@ -14,6 +14,35 @@ services:
       - key: GUILD_ID
         sync: false
       - key: TIMEZONE_WEB_ENABLED
+        value: "false"
+      - key: BOT_ENABLED
         value: "true"
+      - key: BOT_INTERNAL_API_ENABLED
+        value: "true"
+      - key: INTERNAL_API_PORT
+        value: "10000"
+      - key: INTERNAL_API_TOKEN
+        sync: false
       - key: PUBLIC_BASE_URL
         sync: false
+
+  - type: web
+    name: discord-timezone-web
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm run start:web
+    autoDeploy: true
+    envVars:
+      - key: DISCORD_TOKEN
+        sync: false
+      - key: TIMEZONE_WEB_ENABLED
+        value: "true"
+      - key: BOT_ENABLED
+        value: "false"
+      - key: BOT_INTERNAL_URL
+        sync: false
+      - key: INTERNAL_API_TOKEN
+        sync: false
+      - key: PUBLIC_BASE_URL
+        value: ""

@@ -3,6 +3,8 @@ const fs = require('fs');
 const path = require('path');
 require('dotenv').config();
 
+const isBotEnabled = process.env.BOT_ENABLED !== 'false';
+
 let createTimezoneWebServer = null;
 if (process.env.TIMEZONE_WEB_ENABLED === 'false') {
   console.log('ℹ️ Browser timezone web setup disabled by TIMEZONE_WEB_ENABLED=false');
@@ -14,6 +16,28 @@ if (process.env.TIMEZONE_WEB_ENABLED === 'false') {
     process.env.TIMEZONE_WEB_ENABLED = 'false';
     console.warn('⚠️ timezoneWebServer module not found. Browser timezone setup is disabled.');
   }
+}
+
+let createTimezoneInternalServer = null;
+if (process.env.BOT_INTERNAL_API_ENABLED === 'true') {
+  try {
+    ({ createTimezoneInternalServer } = require('./utils/timezoneInternalServer'));
+  } catch (error) {
+    console.warn('⚠️ timezoneInternalServer module not found. Internal API is disabled.');
+  }
+}
+
+if (createTimezoneWebServer) {
+  createTimezoneWebServer();
+}
+
+if (createTimezoneInternalServer) {
+  createTimezoneInternalServer();
+}
+
+if (!isBotEnabled) {
+  console.log('ℹ️ BOT_ENABLED=false, Discord gateway login skipped.');
+  return;
 }
 
 const client = new Client({
@@ -54,10 +78,6 @@ for (const file of eventFiles) {
     client.on(event.name, (...args) => event.execute(...args, client));
   }
   console.log(`✓ Loaded event: ${event.name}`);
-}
-
-if (createTimezoneWebServer) {
-  createTimezoneWebServer();
 }
 
 client.login(process.env.DISCORD_TOKEN);

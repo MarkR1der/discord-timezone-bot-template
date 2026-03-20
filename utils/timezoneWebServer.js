@@ -13,6 +13,47 @@ function sendJson(response, statusCode, payload) {
   response.end(JSON.stringify(payload));
 }
 
+function postJson(url, payload, headers = {}) {
+  return new Promise((resolve, reject) => {
+    const body = JSON.stringify(payload);
+    const target = new URL(url);
+    const client = target.protocol === 'https:' ? require('https') : require('http');
+
+    const req = client.request(
+      {
+        method: 'POST',
+        hostname: target.hostname,
+        port: target.port || (target.protocol === 'https:' ? 443 : 80),
+        path: `${target.pathname}${target.search}`,
+        headers: {
+          'Content-Type': 'application/json',
+          'Content-Length': Buffer.byteLength(body),
+          ...headers,
+        },
+      },
+      res => {
+        let responseBody = '';
+        res.on('data', chunk => {
+          responseBody += chunk;
+        });
+        res.on('end', () => {
+          let parsed = {};
+          try {
+            parsed = responseBody ? JSON.parse(responseBody) : {};
+          } catch {
+            parsed = {};
+          }
+          resolve({ statusCode: res.statusCode || 500, payload: parsed });
+        });
+      }
+    );
+
+    req.on('error', reject);
+    req.write(body);
+    req.end();
+  });
+}
+
 function renderPage(title, body) {
   return `<!DOCTYPE html>
 <html lang="en">
@@ -220,6 +261,11 @@ function createTimezoneWebServer() {
 
     const url = new URL(request.url, `http://${request.headers.host}`);
 
+    if (request.method === 'GET' && (url.pathname === '/' || url.pathname === '/healthz')) {
+      sendJson(response, 200, { ok: true, service: 'timezone-web' });
+      return;
+    }
+
     if (request.method === 'GET' && url.pathname === '/timezone/setup') {
       const token = url.searchParams.get('token');
       if (!token || !getTimezoneSession(token)) {
@@ -244,16 +290,43 @@ function createTimezoneWebServer() {
       request.on('end', () => {
         try {
           const { token, timezone } = JSON.parse(body || '{}');
-          const session = consumeTimezoneSession(token);
-          if (!session) {
-            sendJson(response, 400, { message: 'This setup link expired. Run /detecttz again.' });
-            return;
-          }
 
           try {
             new Intl.DateTimeFormat('en-US', { timeZone: timezone });
           } catch (error) {
             sendJson(response, 400, { message: 'The browser sent an invalid timezone.' });
+            return;
+          }
+
+          const internalUrl = process.env.BOT_INTERNAL_URL;
+          if (internalUrl) {
+            const authToken = process.env.INTERNAL_API_TOKEN || '';
+            const internalEndpoint = `${internalUrl.replace(/\/$/, '')}/internal/timezone/complete`;
+            postJson(
+              internalEndpoint,
+              { token, timezone },
+              authToken ? { Authorization: `Bearer ${authToken}` } : {}
+            )
+              .then(({ statusCode, payload }) => {
+                if (statusCode >= 400) {
+                  sendJson(response, statusCode, { message: payload.message || 'Failed to save timezone.' });
+                  return;
+                }
+                sendJson(response, 200, {
+                  message: 'Timezone saved.',
+                  html: renderSuccessFragment(timezone),
+                });
+              })
+              .catch(error => {
+                console.error('Error forwarding timezone to bot service:', error);
+                sendJson(response, 500, { message: 'Failed to save timezone.' });
+              });
+            return;
+          }
+
+          const session = consumeTimezoneSession(token);
+          if (!session) {
+            sendJson(response, 400, { message: 'This setup link expired. Run /detecttz again.' });
             return;
           }
 
