@@ -19,6 +19,8 @@ function getPublicBaseUrl() {
 function logStartupConfiguration() {
   const publicBaseUrl = getPublicBaseUrl();
   const configuredPort = Number(process.env.PORT || process.env.TIMEZONE_WEB_PORT || 3000);
+  const configuredPublicBaseUrl = process.env.PUBLIC_BASE_URL || null;
+  const renderExternalUrl = process.env.RENDER_EXTERNAL_URL || null;
 
   console.log('✓ Startup configuration:', {
     nodeVersion: process.version,
@@ -31,6 +33,13 @@ function logStartupConfiguration() {
     hasRenderExternalUrl: Boolean(process.env.RENDER_EXTERNAL_URL),
     publicBaseUrl: publicBaseUrl || 'not-configured',
   });
+
+  if (configuredPublicBaseUrl && renderExternalUrl && configuredPublicBaseUrl !== renderExternalUrl) {
+    console.warn('⚠️ URL mismatch detected: PUBLIC_BASE_URL differs from RENDER_EXTERNAL_URL.');
+    console.warn(`   PUBLIC_BASE_URL=${configuredPublicBaseUrl}`);
+    console.warn(`   RENDER_EXTERNAL_URL=${renderExternalUrl}`);
+    console.warn('   Using RENDER_EXTERNAL_URL for setup links and keep-alive pings.');
+  }
 }
 
 const client = new Client({
