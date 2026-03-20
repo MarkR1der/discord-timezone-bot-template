@@ -270,6 +270,12 @@ function createTimezoneWebServer() {
       return;
     }
 
+    if (request.method === 'GET' && (url.pathname === '/health' || url.pathname === '/')) {
+      response.writeHead(200, { 'Content-Type': 'text/plain' });
+      response.end('OK');
+      return;
+    }
+
     sendHtml(response, 404, renderPage('Not Found', `
       <div class="pill">404</div>
       <h1>Page not found</h1>

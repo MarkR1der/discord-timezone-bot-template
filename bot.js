@@ -54,6 +54,23 @@ for (const file of eventFiles) {
 
 if (createTimezoneWebServer) {
   createTimezoneWebServer();
+
+  // Keep Render free tier alive by pinging our own public health endpoint every 14 minutes.
+  // Without this, Render spins down the process after 15 min of no external HTTP traffic,
+  // which kills the Discord gateway and causes "application did not respond" errors.
+  const publicUrl = process.env.PUBLIC_BASE_URL || process.env.RENDER_EXTERNAL_URL;
+  if (publicUrl) {
+    const pinger = publicUrl.startsWith('https') ? require('https') : require('http');
+    const healthUrl = `${publicUrl.replace(/\/$/, '')}/health`;
+    setInterval(() => {
+      pinger.get(healthUrl, (res) => {
+        console.log(`[keep-alive] ping ${res.statusCode}`);
+      }).on('error', (err) => {
+        console.warn('[keep-alive] ping failed:', err.message);
+      });
+    }, 14 * 60 * 1000);
+    console.log(`✓ Keep-alive enabled → ${healthUrl}`);
+  }
 }
 
 client.login(process.env.DISCORD_TOKEN);
