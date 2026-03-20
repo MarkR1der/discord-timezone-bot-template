@@ -1,4 +1,4 @@
-const { Client, GatewayIntentBits, Collection } = require('discord.js');
+const { Client, GatewayIntentBits, Collection, Events } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
 require('dotenv').config();
@@ -53,7 +53,7 @@ for (const file of eventFiles) {
 }
 
 if (createTimezoneWebServer) {
-  createTimezoneWebServer();
+  createTimezoneWebServer(client);
 
   // Keep Render free tier alive by pinging our own public health endpoint every 14 minutes.
   // Without this, Render spins down the process after 15 min of no external HTTP traffic,
@@ -72,5 +72,22 @@ if (createTimezoneWebServer) {
     console.log(`✓ Keep-alive enabled → ${healthUrl}`);
   }
 }
+
+client.on(Events.ShardDisconnect, (closeEvent, shardId) => {
+  console.warn(`⚠️ Shard ${shardId} disconnected with code ${closeEvent.code}.`);
+});
+
+client.on(Events.ShardResume, (shardId, replayedEvents) => {
+  console.log(`✓ Shard ${shardId} resumed with ${replayedEvents} replayed events.`);
+});
+
+client.on(Events.ShardError, (error, shardId) => {
+  console.error(`❌ Shard ${shardId} error:`, error);
+});
+
+client.on(Events.Invalidated, () => {
+  console.error('❌ Discord session invalidated. Exiting so the platform can restart the bot.');
+  process.exit(1);
+});
 
 client.login(process.env.DISCORD_TOKEN);

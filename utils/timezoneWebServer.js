@@ -213,8 +213,9 @@ function renderSuccessFragment(timezone) {
   `;
 }
 
-function createTimezoneWebServer() {
+function createTimezoneWebServer(client) {
   const port = Number(process.env.PORT || process.env.TIMEZONE_WEB_PORT || 3000);
+  const startupGraceMs = 2 * 60 * 1000;
   const server = http.createServer(async (request, response) => {
     cleanupExpiredSessions();
 
@@ -271,8 +272,15 @@ function createTimezoneWebServer() {
     }
 
     if (request.method === 'GET' && (url.pathname === '/health' || url.pathname === '/')) {
-      response.writeHead(200, { 'Content-Type': 'text/plain' });
-      response.end('OK');
+      const inStartupGrace = process.uptime() * 1000 < startupGraceMs;
+      const botReady = !client || client.isReady();
+      const statusCode = botReady || inStartupGrace ? 200 : 503;
+      response.writeHead(statusCode, { 'Content-Type': 'application/json; charset=utf-8' });
+      response.end(JSON.stringify({
+        ok: statusCode === 200,
+        botReady,
+        uptimeSeconds: Math.floor(process.uptime()),
+      }));
       return;
     }
 
