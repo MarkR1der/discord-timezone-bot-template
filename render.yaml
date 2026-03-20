@@ -15,4 +15,4 @@ services:
       - key: GUILD_ID
         sync: false
       - key: PUBLIC_BASE_URL
-        sync: false
+        value: https://discord-timezone-bot-template.onrender.com
