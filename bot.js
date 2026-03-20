@@ -1,6 +1,7 @@
 const { Client, GatewayIntentBits, Collection, Events } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
+const https = require('https');
 require('dotenv').config();
 
 let createTimezoneWebServer = null;
@@ -67,7 +68,36 @@ client.runtimeDiagnostics = {
   readyAt: null,
   lastGatewayError: null,
   lastDisconnectCode: null,
+  authProbe: null,
 };
+
+function probeDiscordAuth(token) {
+  return new Promise((resolve) => {
+    const request = https.request({
+      hostname: 'discord.com',
+      path: '/api/v10/gateway/bot',
+      method: 'GET',
+      headers: {
+        Authorization: `Bot ${token}`,
+        'User-Agent': 'DiscordBot (timezone-bot, 1.0.0)',
+      },
+      timeout: 8000,
+    }, (response) => {
+      response.resume();
+      resolve({ statusCode: response.statusCode, ok: response.statusCode >= 200 && response.statusCode < 300 });
+    });
+
+    request.on('timeout', () => {
+      request.destroy(new Error('timeout'));
+    });
+
+    request.on('error', (error) => {
+      resolve({ statusCode: null, ok: false, error: error.message });
+    });
+
+    request.end();
+  });
+}
 
 // Load commands
 const commandsPath = path.join(__dirname, 'commands');
@@ -151,6 +181,11 @@ if (!discordToken.includes('.')) {
   console.error('❌ DISCORD_TOKEN format looks invalid (expected dot-separated token).');
   process.exit(1);
 }
+
+probeDiscordAuth(discordToken).then((result) => {
+  client.runtimeDiagnostics.authProbe = result;
+  console.log('✓ Discord auth probe:', result);
+});
 
 logStartupConfiguration();
 
