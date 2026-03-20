@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, MessageFlags } = require('discord.js');
+const { SlashCommandBuilder } = require('discord.js');
 const { setUserTimezone } = require('../utils/timezoneStore');
 
 module.exports = {
@@ -20,9 +20,8 @@ module.exports = {
     try {
       new Intl.DateTimeFormat('en-US', { timeZone: timezone });
     } catch (error) {
-      const reply = await interaction.reply({
+      const reply = await interaction.editReply({
         content: `❌ Invalid timezone: **${timezone}**\n\nUse timezones like:\n- \`America/New_York\`\n- \`America/Chicago\`\n- \`America/Los_Angeles\`\n- \`Europe/London\`\n- \`Europe/Paris\`\n- \`Asia/Tokyo\`\n- \`Asia/Dubai\`\n- \`Australia/Sydney\``,
-        flags: MessageFlags.Ephemeral,
         fetchReply: true
       });
       setTimeout(() => reply.delete().catch(() => {}), 15000);
@@ -31,9 +30,8 @@ module.exports = {
 
     setUserTimezone(userId, timezone);
 
-    const reply = await interaction.reply({
+    const reply = await interaction.editReply({
       content: `✅ Your timezone has been set to **${timezone}**!\n\nNow when people use \`/memberinfo\`, your time will be displayed in your timezone!`,
-      flags: MessageFlags.Ephemeral,
       fetchReply: true
     });
     setTimeout(() => reply.delete().catch(() => {}), 15000);

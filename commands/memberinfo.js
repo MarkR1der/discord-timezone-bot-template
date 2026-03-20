@@ -62,7 +62,7 @@ module.exports = {
       })
       .setTimestamp();
 
-    const reply = await interaction.reply({ embeds: [embed], fetchReply: true });
+    const reply = await interaction.editReply({ embeds: [embed], fetchReply: true });
 
     setTimeout(() => {
       reply.delete().catch(() => {});

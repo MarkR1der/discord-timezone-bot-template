@@ -1,5 +1,13 @@
-const { Events } = require('discord.js');
+const { Events, MessageFlags } = require('discord.js');
 const { getServerSettings } = require('../utils/serverSettingsStore');
+
+const EPHEMERAL_COMMANDS = new Set([
+  'detecttz',
+  'help',
+  'resettimezone',
+  'settimezone',
+  'setting',
+]);
 
 module.exports = {
   name: Events.InteractionCreate,
@@ -27,10 +35,15 @@ module.exports = {
     }
 
     try {
+      // Acknowledge quickly to avoid Discord's 3-second timeout during cold starts.
+      const shouldBeEphemeral = EPHEMERAL_COMMANDS.has(interaction.commandName);
+      await interaction.deferReply(shouldBeEphemeral ? { flags: MessageFlags.Ephemeral } : {});
       await command.execute(interaction);
     } catch (error) {
       console.error(error);
-      if (interaction.replied || interaction.deferred) {
+      if (interaction.deferred && !interaction.replied) {
+        await interaction.editReply({ content: '❌ There was an error executing this command!' });
+      } else if (interaction.replied) {
         await interaction.followUp({ content: '❌ There was an error executing this command!', ephemeral: true });
       } else {
         await interaction.reply({ content: '❌ There was an error executing this command!', ephemeral: true });

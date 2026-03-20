@@ -8,9 +8,8 @@ module.exports = {
   
   async execute(interaction) {
     if (process.env.TIMEZONE_WEB_ENABLED === 'false') {
-      const fallbackReply = await interaction.reply({
+      const fallbackReply = await interaction.editReply({
         content: '⚠️ Browser-based timezone setup is currently unavailable. Please use `/settimezone` (for example: `/settimezone Asia/Manila`).',
-        flags: MessageFlags.Ephemeral,
         fetchReply: true,
       });
 
@@ -28,9 +27,8 @@ module.exports = {
       : null);
 
     if (!baseUrl) {
-      const configReply = await interaction.reply({
+      const configReply = await interaction.editReply({
         content: '⚠️ Timezone setup link is not configured on this deployment. Set `PUBLIC_BASE_URL` to your public Render URL, then try `/detecttz` again. You can use `/settimezone` meanwhile.',
-        flags: MessageFlags.Ephemeral,
         fetchReply: true,
       });
 
@@ -48,10 +46,9 @@ module.exports = {
         .setURL(setupUrl)
     );
 
-    const reply = await interaction.reply({
+    const reply = await interaction.editReply({
       content: 'Open the link below on the device whose timezone you want to use. The page will read the browser timezone from that device and save only the timezone name.',
       components: [row],
-      flags: MessageFlags.Ephemeral,
       fetchReply: true,
     });
 

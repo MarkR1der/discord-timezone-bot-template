@@ -53,9 +53,8 @@ module.exports = {
   async execute(interaction) {
     // Check if user is server owner
     if (interaction.user.id !== interaction.guild.ownerId) {
-      await interaction.reply({
+      await interaction.editReply({
         content: '❌ Only the server owner can use admin commands.',
-        ephemeral: true,
       });
       return;
     }
@@ -68,14 +67,12 @@ module.exports = {
       try {
         setHourFormat(serverId, format);
         const label = format === '12h' ? '12-hour (e.g., 2:45 PM)' : '24-hour (e.g., 14:45)';
-        await interaction.reply({
+        await interaction.editReply({
           content: `✓ Hour format changed to **${label}** for this server.`,
-          ephemeral: true,
         });
       } catch (error) {
-        await interaction.reply({
+        await interaction.editReply({
           content: `❌ Error: ${error.message}`,
-          ephemeral: true,
         });
       }
       return;
@@ -87,23 +84,20 @@ module.exports = {
 
       // Validation
       if (!/^[a-z0-9\-_]{1,32}$/.test(newName)) {
-        await interaction.reply({
+        await interaction.editReply({
           content: '❌ Command name must be lowercase, 1-32 characters, and contain only letters, numbers, hyphens, or underscores.',
-          ephemeral: true,
         });
         return;
       }
 
       try {
         setCommandAlias(serverId, command, newName);
-        await interaction.reply({
+        await interaction.editReply({
           content: `✓ Command \`/${command}\` is now aliased as \`/${newName}\`. Both names will work.`,
-          ephemeral: true,
         });
       } catch (error) {
-        await interaction.reply({
+        await interaction.editReply({
           content: `❌ Error: ${error.message}`,
-          ephemeral: true,
         });
       }
       return;
@@ -112,9 +106,8 @@ module.exports = {
     if (subcommand === 'reset-command') {
       const command = interaction.options.getString('command');
       removeCommandAlias(interaction.guildId, command);
-      await interaction.reply({
+      await interaction.editReply({
         content: `✓ Command \`/${command}\` reset to its original name.`,
-        ephemeral: true,
       });
       return;
     }
@@ -137,9 +130,8 @@ module.exports = {
         )
         .setFooter({ text: 'Only the server owner can change these settings.' });
 
-      await interaction.reply({
+      await interaction.editReply({
         embeds: [embed],
-        ephemeral: true,
       });
       return;
     }

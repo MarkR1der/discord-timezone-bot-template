@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, EmbedBuilder, MessageFlags } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -75,9 +75,8 @@ module.exports = {
       .setFooter({ text: 'TimeZone Bot v1.0' })
       .setTimestamp();
 
-    const reply = await interaction.reply({ 
+    const reply = await interaction.editReply({ 
       embeds: [embed], 
-      flags: MessageFlags.Ephemeral,
       fetchReply: true
     });
     setTimeout(() => reply.delete().catch(() => {}), 15000);

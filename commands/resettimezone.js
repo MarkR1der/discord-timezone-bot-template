@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, MessageFlags } = require('discord.js');
+const { SlashCommandBuilder } = require('discord.js');
 const { resetUserTimezone } = require('../utils/timezoneStore');
 
 module.exports = {
@@ -8,18 +8,16 @@ module.exports = {
 
   async execute(interaction) {
     if (!resetUserTimezone(interaction.user.id)) {
-      const reply = await interaction.reply({
+      const reply = await interaction.editReply({
         content: 'ℹ️ You do not have a saved timezone to reset. Use /detecttz or /settimezone to set one.',
-        flags: MessageFlags.Ephemeral,
         fetchReply: true,
       });
       setTimeout(() => reply.delete().catch(() => {}), 15000);
       return;
     }
 
-    const reply = await interaction.reply({
+    const reply = await interaction.editReply({
       content: '✅ Your saved timezone has been removed. You can now use /detecttz or /settimezone again.',
-      flags: MessageFlags.Ephemeral,
       fetchReply: true,
     });
     setTimeout(() => reply.delete().catch(() => {}), 15000);
