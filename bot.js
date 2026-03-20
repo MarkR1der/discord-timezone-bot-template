@@ -26,6 +26,8 @@ function logStartupConfiguration() {
     nodeVersion: process.version,
     timezoneWebEnabled: process.env.TIMEZONE_WEB_ENABLED === 'true',
     port: configuredPort,
+    enableGuildMembersIntent: process.env.ENABLE_GUILD_MEMBERS_INTENT === 'true',
+    enableMessageContentIntent: process.env.ENABLE_MESSAGE_CONTENT_INTENT === 'true',
     hasDiscordToken: Boolean(process.env.DISCORD_TOKEN),
     hasClientId: Boolean(process.env.CLIENT_ID),
     hasGuildId: Boolean(process.env.GUILD_ID),
@@ -43,12 +45,19 @@ function logStartupConfiguration() {
 }
 
 const client = new Client({
-  intents: [
-    GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMembers,
-    GatewayIntentBits.DirectMessages,
-    GatewayIntentBits.MessageContent,
-  ],
+  intents: (() => {
+    const intents = [GatewayIntentBits.Guilds];
+
+    if (process.env.ENABLE_GUILD_MEMBERS_INTENT === 'true') {
+      intents.push(GatewayIntentBits.GuildMembers);
+    }
+
+    if (process.env.ENABLE_MESSAGE_CONTENT_INTENT === 'true') {
+      intents.push(GatewayIntentBits.MessageContent);
+    }
+
+    return intents;
+  })(),
 });
 
 client.commands = new Collection();
