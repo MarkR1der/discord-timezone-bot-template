@@ -142,6 +142,16 @@ if (!process.env.DISCORD_TOKEN) {
   process.exit(1);
 }
 
+const discordToken = process.env.DISCORD_TOKEN.trim();
+if (discordToken !== process.env.DISCORD_TOKEN) {
+  console.warn('⚠️ DISCORD_TOKEN contained surrounding whitespace and was trimmed.');
+}
+
+if (!discordToken.includes('.')) {
+  console.error('❌ DISCORD_TOKEN format looks invalid (expected dot-separated token).');
+  process.exit(1);
+}
+
 logStartupConfiguration();
 
 setTimeout(() => {
@@ -154,7 +164,7 @@ setTimeout(() => {
   }
 }, 60 * 1000);
 
-client.login(process.env.DISCORD_TOKEN)
+client.login(discordToken)
   .then(() => {
     client.runtimeDiagnostics.loginAcceptedAt = Date.now();
     console.log('✓ Discord login request accepted, waiting for ready event...');
