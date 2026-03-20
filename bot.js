@@ -14,7 +14,15 @@ try {
 }
 
 function getPublicBaseUrl() {
-  return process.env.RENDER_EXTERNAL_URL || process.env.PUBLIC_BASE_URL || null;
+  if (process.env.RENDER_EXTERNAL_URL) {
+    return process.env.RENDER_EXTERNAL_URL;
+  }
+
+  if (process.env.NODE_ENV !== 'production') {
+    return process.env.PUBLIC_BASE_URL || null;
+  }
+
+  return null;
 }
 
 function logStartupConfiguration() {
