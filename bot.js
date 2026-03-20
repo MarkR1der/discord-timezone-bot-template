@@ -4,12 +4,16 @@ const path = require('path');
 require('dotenv').config();
 
 let createTimezoneWebServer = null;
-try {
-  ({ createTimezoneWebServer } = require('./utils/timezoneWebServer'));
-  process.env.TIMEZONE_WEB_ENABLED = 'true';
-} catch (error) {
-  process.env.TIMEZONE_WEB_ENABLED = 'false';
-  console.warn('⚠️ timezoneWebServer module not found. Browser timezone setup is disabled.');
+if (process.env.TIMEZONE_WEB_ENABLED === 'false') {
+  console.log('ℹ️ Browser timezone web setup disabled by TIMEZONE_WEB_ENABLED=false');
+} else {
+  try {
+    ({ createTimezoneWebServer } = require('./utils/timezoneWebServer'));
+    process.env.TIMEZONE_WEB_ENABLED = 'true';
+  } catch (error) {
+    process.env.TIMEZONE_WEB_ENABLED = 'false';
+    console.warn('⚠️ timezoneWebServer module not found. Browser timezone setup is disabled.');
+  }
 }
 
 const client = new Client({

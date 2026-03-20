@@ -64,3 +64,19 @@ The bot will display a formatted embed with the member's information including t
 - Node.js 16.11.0 or higher
 - Discord.js 14.x
 - A Discord bot token
+
+## Render Deployment
+
+This repo is configured for Render as a worker service via `render.yaml`.
+
+1. Create a new Blueprint service in Render from this repository.
+2. Set environment variables in Render:
+  - `DISCORD_TOKEN`
+  - `CLIENT_ID`
+  - `GUILD_ID` (optional for this app, but kept for consistency)
+3. Deploy the service.
+
+Notes:
+- Worker services keep the bot running without your PC being on.
+- `TIMEZONE_WEB_ENABLED` is set to `false` in Render worker mode, so `/detecttz` browser flow is disabled there.
+- Use `/settimezone` in worker mode, or run as a web service with a public URL if you need browser-based timezone detection.
