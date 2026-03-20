@@ -271,16 +271,20 @@ function createTimezoneWebServer(client) {
       return;
     }
 
-    if (request.method === 'GET' && (url.pathname === '/health' || url.pathname === '/')) {
+    if ((request.method === 'GET' || request.method === 'HEAD') && (url.pathname === '/health' || url.pathname === '/')) {
       const inStartupGrace = process.uptime() * 1000 < startupGraceMs;
       const botReady = !client || client.isReady();
       const statusCode = botReady || inStartupGrace ? 200 : 503;
       response.writeHead(statusCode, { 'Content-Type': 'application/json; charset=utf-8' });
-      response.end(JSON.stringify({
-        ok: statusCode === 200,
-        botReady,
-        uptimeSeconds: Math.floor(process.uptime()),
-      }));
+      if (request.method === 'HEAD') {
+        response.end();
+      } else {
+        response.end(JSON.stringify({
+          ok: statusCode === 200,
+          botReady,
+          uptimeSeconds: Math.floor(process.uptime()),
+        }));
+      }
       return;
     }
 
