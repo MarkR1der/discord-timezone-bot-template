@@ -62,6 +62,12 @@ const client = new Client({
 
 client.commands = new Collection();
 client.cooldowns = new Collection();
+client.runtimeDiagnostics = {
+  loginAcceptedAt: null,
+  readyAt: null,
+  lastGatewayError: null,
+  lastDisconnectCode: null,
+};
 
 // Load commands
 const commandsPath = path.join(__dirname, 'commands');
@@ -113,6 +119,7 @@ if (createTimezoneWebServer) {
 }
 
 client.on(Events.ShardDisconnect, (closeEvent, shardId) => {
+  client.runtimeDiagnostics.lastDisconnectCode = closeEvent.code;
   console.warn(`⚠️ Shard ${shardId} disconnected with code ${closeEvent.code}.`);
 });
 
@@ -121,6 +128,7 @@ client.on(Events.ShardResume, (shardId, replayedEvents) => {
 });
 
 client.on(Events.ShardError, (error, shardId) => {
+  client.runtimeDiagnostics.lastGatewayError = error?.message || String(error);
   console.error(`❌ Shard ${shardId} error:`, error);
 });
 
@@ -148,6 +156,7 @@ setTimeout(() => {
 
 client.login(process.env.DISCORD_TOKEN)
   .then(() => {
+    client.runtimeDiagnostics.loginAcceptedAt = Date.now();
     console.log('✓ Discord login request accepted, waiting for ready event...');
   })
   .catch((error) => {

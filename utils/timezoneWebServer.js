@@ -274,6 +274,7 @@ function createTimezoneWebServer(client) {
     if ((request.method === 'GET' || request.method === 'HEAD') && (url.pathname === '/health' || url.pathname === '/')) {
       const inStartupGrace = process.uptime() * 1000 < startupGraceMs;
       const botReady = !client || client.isReady();
+      const diagnostics = client?.runtimeDiagnostics || null;
       // Health checks should reflect process liveness so hosting platforms don't restart in a loop.
       const statusCode = 200;
       response.writeHead(statusCode, { 'Content-Type': 'application/json; charset=utf-8' });
@@ -285,6 +286,7 @@ function createTimezoneWebServer(client) {
           botReady,
           inStartupGrace,
           uptimeSeconds: Math.floor(process.uptime()),
+          diagnostics,
         }));
       }
       return;
