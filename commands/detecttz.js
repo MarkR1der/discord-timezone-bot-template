@@ -1,6 +1,19 @@
 const { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags } = require('discord.js');
 const { createTimezoneSession } = require('../utils/timezoneSessionStore');
 
+function getSetupBaseUrl() {
+  const configuredBaseUrl = process.env.PUBLIC_BASE_URL || process.env.RENDER_EXTERNAL_URL;
+  if (configuredBaseUrl) {
+    return configuredBaseUrl;
+  }
+
+  if (process.env.ALLOW_LOCALHOST_DETECTTZ === 'true') {
+    return `http://localhost:${process.env.PORT || process.env.TIMEZONE_WEB_PORT || 3000}`;
+  }
+
+  return null;
+}
+
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('detecttz')
@@ -20,15 +33,11 @@ module.exports = {
     }
 
     const token = createTimezoneSession(interaction.user.id);
-    const configuredBaseUrl = process.env.PUBLIC_BASE_URL || process.env.RENDER_EXTERNAL_URL;
-    const isDevelopment = process.env.NODE_ENV !== 'production';
-    const baseUrl = configuredBaseUrl || (isDevelopment
-      ? `http://localhost:${process.env.PORT || process.env.TIMEZONE_WEB_PORT || 3000}`
-      : null);
+    const baseUrl = getSetupBaseUrl();
 
     if (!baseUrl) {
       const configReply = await interaction.editReply({
-        content: '⚠️ Timezone setup link is not configured on this deployment. Set `PUBLIC_BASE_URL` to your public Render URL, then try `/detecttz` again. You can use `/settimezone` meanwhile.',
+        content: '⚠️ Timezone setup link is not configured with a public URL. Set `PUBLIC_BASE_URL` to your public Render URL, then try `/detecttz` again. For local-only testing, you can set `ALLOW_LOCALHOST_DETECTTZ=true`. You can use `/settimezone` meanwhile.',
         fetchReply: true,
       });
 
